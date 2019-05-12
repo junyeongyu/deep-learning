@@ -1,0 +1,172 @@
+qwiklabs-gcp-7213f420216c9afb
+
+
+- To disk
+- Note down the name of your bucket: qwiklabs-gcp-7213f420216c9afb
+- What is the URL of the published Cloud Storage file? https://storage.googleapis.com/qwiklabs-gcp-7213f420216c9afb/earthquakes/earthquakes.htm
+- What are some advantages of publishing to Cloud Storage? We don't have to worry about that data will be removed after shut down VM instance.
+- Does deleting the instance have any impact on the files that you stored on Cloud Storage? No
+
+
+
+
+cat /proc/cpuinfo
+
+sudo apt-get update
+sudo apt-get -y -qq install git
+
+git --version
+
+git clone https://github.com/GoogleCloudPlatform/training-data-analyst
+
+cd training-data-analyst/courses/machine_learning/deepdive/01_googleml/earthquakes
+
+less ingest.sh
+
+bash ingest.sh
+
+head earthquakes.csv
+
+https://github.com/GoogleCloudPlatform/datalab-samples/blob/master/basemap/earthquakes.ipynb
+
+bash install_missing.sh
+
+./transform.py
+
+ls -l
+
+gsutil cp earthquakes.* gs://qwiklabs-gcp-7213f420216c9afb/earthquakes/
+
+gsutil acl ch -u AllUsers:R gs://qwiklabs-gcp-7213f420216c9afb/earthquakes/*
+
+
+
+==================================
+Big Query
+
+qwiklabs-gcp-4503425b33f0d032
+
+gcloud compute zones list
+
+datalab create mydatalabvm --zone us-east1-c
+
+- Click on Web Preview icon on the top-right corner of the Cloud Shell ribbon. Click Change Port and enter the port 8081 and click Change and Preview.
+
+- https://console.cloud.google.com/apis/library/sourcerepo.googleapis.com/?q=Repositories
+
+- https://8081-dot-7202347-dot-devshell.appspot.com/tree/datalab
+
+#standardSQL
+SELECT
+  departure_delay,
+  COUNT(1) AS num_flights,
+  APPROX_QUANTILES(arrival_delay, 5) AS arrival_delay_quantiles
+FROM
+  `bigquery-samples.airline_ontime_data.flights`
+GROUP BY
+  departure_delay
+HAVING
+  num_flights > 100
+ORDER BY
+
+#standardSQL
+SELECT
+  departure_airport,
+  arrival_airport,
+  COUNT(1) AS num_flights
+FROM
+  `bigquery-samples.airline_ontime_data.flights`
+GROUP BY
+  departure_airport,
+  arrival_airport
+ORDER BY
+  num_flights DESC
+LIMIT
+  10
+  departure_delay ASC
+
+
+query="""
+SELECT
+  departure_delay,
+  COUNT(1) AS num_flights,
+  APPROX_QUANTILES(arrival_delay, 10) AS arrival_delay_deciles
+FROM
+  `bigquery-samples.airline_ontime_data.flights`
+GROUP BY
+  departure_delay
+HAVING
+  num_flights > 100
+ORDER BY
+  departure_delay ASC
+"""
+
+import google.datalab.bigquery as bq
+df = bq.Query(query).execute().result().to_dataframe()
+df.head()
+
+
+import pandas as pd
+percentiles = df['arrival_delay_deciles'].apply(pd.Series)
+percentiles = percentiles.rename(columns = lambda x : str(x*10) + "%")
+df = pd.concat([df['departure_delay'], percentiles], axis=1)
+df.head()
+
+
+without_extremes = df.drop(['0%', '100%'], 1)
+without_extremes.plot(x='departure_delay', xlim=(-30,50), ylim=(-50,50));
+
+
+datalab connect mydatalabvm
+
+===================================================================
+Invoking Machine Learning APIs
+
+- 8081
+- repocheckout
+
+%bash
+git clone https://github.com/GoogleCloudPlatform/training-data-analyst
+rm -rf training-data-analyst/.git
+
+- ensure you see the training-data-analyst
+
+- In the Datalab browser, navigate to training-data-analyst > courses > machine_learning > deepdive > 01_googleml > mlapis.ipynb
+
+===================================================================
+Lab: Creating Repeatable Dataset Splits in BigQuery & Lab: Exploring and Creating ML Datasets
+
+- 8081
+
+in notebook
+- Rename this notebook as repocheckout
+
+%bash
+git clone https://github.com/GoogleCloudPlatform/training-data-analyst
+rm -rf training-data-analyst/.git
+
+- datalab > notebooks > training-data-analyst > courses > machine_learning > deepdive > 02_generalization and open repeatable_splitting.ipynb
+
+- (if disconnected) datalab connect mydatalabvm
+
+query = """
+SELECT
+  pickup_datetime,
+  pickup_longitude, pickup_latitude, 
+  dropoff_longitude, dropoff_latitude,
+  passenger_count,
+  trip_distance,
+  tolls_amount,
+  fare_amount,
+  total_amount
+FROM 
+  `nyc-tlc.yellow.trips`
+WHERE
+  MOD(ABS(FARM_FINGERPRINT(CAST(pickup_datetime AS STRING))), 100000) = 0
+"""
+trips = bq.Query(query).execute().result().to_dataframe()
+
+
+[Course 3 - Intro to TensorFlow] ===================================================================
+Lab: 
+

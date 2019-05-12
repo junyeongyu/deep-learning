@@ -168,5 +168,12 @@ trips = bq.Query(query).execute().result().to_dataframe()
 
 
 [Course 3 - Intro to TensorFlow] ===================================================================
-Lab: 
+Lab: [ML on GCP C3] Implementing a Machine Learning model in TensorFlow using Estimator API
+
+- Rename this notebook as repocheckout.
+%bash
+git clone https://github.com/GoogleCloudPlatform/training-data-analyst
+rm -rf training-data-analyst/.git
+
+- In Cloud Datalab, click on the Home icon, and then navigate to datalab > notebooks > training-data-analyst > courses > machine_learning > deepdive > 03_tensorflow > labs and open b_estimator.ipynb.
 
